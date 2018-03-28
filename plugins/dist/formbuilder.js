@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
   rivets.binders.input = {
     publishes: true,
     routine: rivets.binders.value.routine,
@@ -180,6 +180,7 @@
 
     EditFieldView.prototype.events = {
       'click .js-add-option': 'addOption',
+      'click .js-add-star': 'addStar',
       'click .js-remove-option': 'removeOption',
       'click .js-default-updated': 'defaultUpdated',
       'input .option-label-input': 'forceRender'
@@ -223,6 +224,27 @@
       this.model.set(Formbuilder.options.mappings.OPTIONS, options);
       this.model.trigger("change:" + Formbuilder.options.mappings.OPTIONS);
       return this.forceRender();
+    };
+
+    EditFieldView.prototype.addStar = function(e) {
+      var $el, i, newStar, stars;
+      $el = $(e.currentTarget);
+      i = this.$el.find('.star').index($el.closest('.star'));
+      stars = this.model.get(Formbuilder.options.mappings.STARS) || [];
+      newStar = {
+        label: ""
+      };
+      if (i > -1) {
+        stars.splice(i + 1, 0, newStar);
+      } else {
+        stars.push(newStar);
+      }
+      this.model.set(Formbuilder.options.mappings.STARS, stars);
+      this.model.trigger("change:" + Formbuilder.options.mappings.STARS);
+      console.log("Formbuilder.options.mappings.STARS",Formbuilder.options.mappings.STARS)
+      console.log("this.model",this.model)
+      
+      // return this.forceRender();
     };
 
     EditFieldView.prototype.removeOption = function(e) {
@@ -554,9 +576,9 @@
       defaultFieldAttrs: function(field_type) {
         var attrs, _base;
         attrs = {};
-        attrs[Formbuilder.options.mappings.LABEL] = 'Untitled';
+        attrs[Formbuilder.options.mappings.LABEL] = '';
         attrs[Formbuilder.options.mappings.FIELD_TYPE] = field_type;
-        attrs[Formbuilder.options.mappings.REQUIRED] = true;
+        attrs[Formbuilder.options.mappings.REQUIRED] = false;
         attrs['field_options'] = {};
         return (typeof (_base = Formbuilder.fields[field_type]).defaultAttributes === "function" ? _base.defaultAttributes(attrs) : void 0) || attrs;
       },
@@ -569,7 +591,7 @@
       BUTTON_CLASS: 'fb-button',
       HTTP_ENDPOINT: '',
       HTTP_METHOD: 'POST',
-      AUTOSAVE: true,
+      AUTOSAVE: false,
       CLEAR_FIELD_CONFIRM: false,
       mappings: {
         SIZE: 'field_options.size',
@@ -579,6 +601,7 @@
         REQUIRED: 'required',
         ADMIN_ONLY: 'admin_only',
         OPTIONS: 'field_options.options',
+        STARS: 'field_options.stars',
         DESCRIPTION: 'field_options.description',
         INCLUDE_OTHER: 'field_options.include_other_option',
         INCLUDE_BLANK: 'field_options.include_blank_option',
@@ -590,9 +613,9 @@
         LENGTH_UNITS: 'field_options.min_max_length_units'
       },
       dict: {
-        ALL_CHANGES_SAVED: 'All changes saved',
-        SAVE_FORM: 'Save form',
-        UNSAVED_CHANGES: 'You have unsaved changes. If you leave this page, you will lose those changes!'
+        ALL_CHANGES_SAVED: '保存',
+        SAVE_FORM: '保存表单',
+        UNSAVED_CHANGES: '是否将修改保存到表单中？'
       }
     };
 
@@ -644,126 +667,35 @@
 
 }).call(this);
 
+// 单选
 (function() {
-  Formbuilder.registerField('address', {
-    order: 50,
-    view: "<div class='input-line'>\n  <span class='street'>\n    <input type='text' />\n    <label>Address</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='city'>\n    <input type='text' />\n    <label>City</label>\n  </span>\n\n  <span class='state'>\n    <input type='text' />\n    <label>State / Province / Region</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='zip'>\n    <input type='text' />\n    <label>Zipcode</label>\n  </span>\n\n  <span class='country'>\n    <select><option>United States</option></select>\n    <label>Country</label>\n  </span>\n</div>",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-home\"></span></span> Address"
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('checkboxes', {
-    order: 10,
-    view: "<% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n  <div>\n    <label class='fb-option'>\n      <input type='checkbox' <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].checked && 'checked' %> onclick=\"javascript: return false;\" />\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n    </label>\n  </div>\n<% } %>\n\n<% if (rf.get(Formbuilder.options.mappings.INCLUDE_OTHER)) { %>\n  <div class='other-option'>\n    <label class='fb-option'>\n      <input type='checkbox' />\n      Other\n    </label>\n\n    <input type='text' />\n  </div>\n<% } %>",
-    edit: "<%= Formbuilder.templates['edit/options']({ includeOther: true }) %>",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-square-o\"></span></span> Checkboxes",
-    defaultAttributes: function(attrs) {
-      attrs.field_options.options = [
-        {
-          label: "",
-          checked: false
-        }, {
-          label: "",
-          checked: false
-        }
-      ];
-      return attrs;
-    }
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('date', {
-    order: 20,
-    view: "<div class='input-line'>\n  <span class='month'>\n    <input type=\"text\" />\n    <label>MM</label>\n  </span>\n\n  <span class='above-line'>/</span>\n\n  <span class='day'>\n    <input type=\"text\" />\n    <label>DD</label>\n  </span>\n\n  <span class='above-line'>/</span>\n\n  <span class='year'>\n    <input type=\"text\" />\n    <label>YYYY</label>\n  </span>\n</div>",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-calendar\"></span></span> Date"
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('dropdown', {
-    order: 24,
-    view: "<select>\n  <% if (rf.get(Formbuilder.options.mappings.INCLUDE_BLANK)) { %>\n    <option value=''></option>\n  <% } %>\n\n  <% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n    <option <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].checked && 'selected' %>>\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n    </option>\n  <% } %>\n</select>",
-    edit: "<%= Formbuilder.templates['edit/options']({ includeBlank: true }) %>",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Dropdown",
-    defaultAttributes: function(attrs) {
-      attrs.field_options.options = [
-        {
-          label: "",
-          checked: false
-        }, {
-          label: "",
-          checked: false
-        }
-      ];
-      attrs.field_options.include_blank_option = false;
-      return attrs;
-    }
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('email', {
-    order: 40,
-    view: "<input type='text' class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>' />",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-envelope-o\"></span></span> Email"
-  });
-
-}).call(this);
-
-(function() {
-
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('number', {
-    order: 30,
-    view: "<input type='text' />\n<% if (units = rf.get(Formbuilder.options.mappings.UNITS)) { %>\n  <%= units %>\n<% } %>",
-    edit: "<%= Formbuilder.templates['edit/min_max']() %>\n<%= Formbuilder.templates['edit/units']() %>\n<%= Formbuilder.templates['edit/integer_only']() %>",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-number\">123</span></span> Number"
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('paragraph', {
-    order: 5,
-    view: "<textarea class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>'></textarea>",
-    edit: "<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
-    addButton: "<span class=\"symbol\">&#182;</span> Paragraph",
-    defaultAttributes: function(attrs) {
-      attrs.field_options.size = 'small';
-      return attrs;
-    }
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('price', {
-    order: 45,
-    view: "<div class='input-line'>\n  <span class='above-line'>$</span>\n  <span class='dolars'>\n    <input type='text' />\n    <label>Dollars</label>\n  </span>\n  <span class='above-line'>.</span>\n  <span class='cents'>\n    <input type='text' />\n    <label>Cents</label>\n  </span>\n</div>",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-usd\"></span></span> Price"
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('radio', {
-    order: 15,
+  Formbuilder.registerField('单选题', {
+    order: 1,
     view: "<% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n  <div>\n    <label class='fb-option'>\n      <input type='radio' <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].checked && 'checked' %> onclick=\"javascript: return false;\" />\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n    </label>\n  </div>\n<% } %>\n\n<% if (rf.get(Formbuilder.options.mappings.INCLUDE_OTHER)) { %>\n  <div class='other-option'>\n    <label class='fb-option'>\n      <input type='radio' />\n      Other\n    </label>\n\n    <input type='text' />\n  </div>\n<% } %>",
-    edit: "<%= Formbuilder.templates['edit/options']({ includeOther: true }) %>",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-circle-o\"></span></span> Multiple Choice",
+    edit: "<%= Formbuilder.templates['edit/options']({ includeOther: undefined }) %>",
+    addButton: "<span class=\"symbol\"><span class=\"fa fa-check-circle\"></span></span>&nbsp;单选",
+    defaultAttributes: function(attrs) {
+      attrs.field_options.options = [
+        {
+          label: "",
+          checked: false
+        }, {
+          label: "",
+          checked: false
+        }
+      ];
+      return attrs;
+    }
+  });
+}).call(this);
+
+// 多选
+(function() {
+  Formbuilder.registerField('多选题', {
+    order: 2,
+    view: "<% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n  <div>\n    <label class='fb-option'>\n      <input type='checkbox' <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].checked && 'checked' %> onclick=\"javascript: return false;\" />\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n    </label>\n  </div>\n<% } %>\n\n<% if (rf.get(Formbuilder.options.mappings.INCLUDE_OTHER)) { %>\n  <div class='other-option'>\n    <label class='fb-option'>\n      <input type='checkbox' />\n      Other\n    </label>\n\n    <input type='text' />\n  </div>\n<% } %>",
+    edit: "<%= Formbuilder.templates['edit/options']({ includeOther: undefined }) %>",
+    addButton: "<span class=\"symbol\"><span class=\"fa fa-check-square\"></span></span>&nbsp;多选",
     defaultAttributes: function(attrs) {
       attrs.field_options.options = [
         {
@@ -779,51 +711,49 @@
   });
 
 }).call(this);
-
+// 问答
 (function() {
-  Formbuilder.registerField('section_break', {
-    order: 0,
-    type: 'non_input',
-    view: "<label class='section-name'><%= rf.get(Formbuilder.options.mappings.LABEL) %></label>\n<p><%= rf.get(Formbuilder.options.mappings.DESCRIPTION) %></p>",
-    edit: "<div class='fb-edit-section-header'>Label</div>\n<input type='text' data-rv-input='model.<%= Formbuilder.options.mappings.LABEL %>' />\n<textarea data-rv-input='model.<%= Formbuilder.options.mappings.DESCRIPTION %>'\n  placeholder='Add a longer description to this field'></textarea>",
-    addButton: "<span class='symbol'><span class='fa fa-minus'></span></span> Section Break"
-  });
-
-}).call(this);
-
-(function() {
-  Formbuilder.registerField('text', {
-    order: 0,
+  Formbuilder.registerField('问答题', {
+    order: 3,
     view: "<input type='text' class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>' />",
     edit: "<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
-    addButton: "<span class='symbol'><span class='fa fa-font'></span></span> Text",
+    addButton: "<span class='symbol'><span class='fa fa-edit'></span></span>&nbsp;问答",
     defaultAttributes: function(attrs) {
       attrs.field_options.size = 'small';
       return attrs;
     }
   });
-
 }).call(this);
-
+// 打星
 (function() {
-  Formbuilder.registerField('time', {
-    order: 25,
-    view: "<div class='input-line'>\n  <span class='hours'>\n    <input type=\"text\" />\n    <label>HH</label>\n  </span>\n\n  <span class='above-line'>:</span>\n\n  <span class='minutes'>\n    <input type=\"text\" />\n    <label>MM</label>\n  </span>\n\n  <span class='above-line'>:</span>\n\n  <span class='seconds'>\n    <input type=\"text\" />\n    <label>SS</label>\n  </span>\n\n  <span class='am_pm'>\n    <select>\n      <option>AM</option>\n      <option>PM</option>\n    </select>\n  </span>\n</div>",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-clock-o\"></span></span> Time"
+  Formbuilder.registerField('打星题', {
+    order: 4,
+    view: "<% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n  <div>\n    <label class='fb-option'>\n      \n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n  <span class=\"fa fa-star-o\"></span>  </label>\n  </div>\n<% } %>\n\n<% if (rf.get(Formbuilder.options.mappings.INCLUDE_OTHER)) { %>\n  <div class='other-option'>\n    <label class='fb-option'>\n      <input type='radio' />\n      Other\n    </label>\n\n    <input type='text' />\n  </div>\n<% } %>",
+    edit: "<%= Formbuilder.templates['edit/options']({ includeOther: undefined }) %><%= Formbuilder.templates['edit/star']({}) %>",
+    addButton: "<span class=\"symbol\"><span class=\"fa fa-star\"></span></span>&nbsp;打星",
+    defaultAttributes: function(attrs) {
+      attrs.field_options.options = [
+        {
+          label: ""
+        }
+      ];
+      attrs.field_options.stars = [
+        {
+          label: ""
+        }
+      ];
+      return attrs;
+    }
   });
-
 }).call(this);
 
-(function() {
-  Formbuilder.registerField('website', {
-    order: 35,
-    view: "<input type='text' placeholder='http://' />",
-    edit: "",
-    addButton: "<span class=\"symbol\"><span class=\"fa fa-link\"></span></span> Website"
-  });
 
-}).call(this);
+
+
+
+
+
+
 
 this["Formbuilder"] = this["Formbuilder"] || {};
 this["Formbuilder"]["templates"] = this["Formbuilder"]["templates"] || {};
@@ -873,24 +803,14 @@ return __p
 };
 
 this["Formbuilder"]["templates"]["edit/checkboxes"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape;
-with (obj) {
-__p += '<label>\n  <input type=\'checkbox\' data-rv-checked=\'model.' +
-((__t = ( Formbuilder.options.mappings.REQUIRED )) == null ? '' : __t) +
-'\' />\n  Required\n</label>\n<!-- label>\n  <input type=\'checkbox\' data-rv-checked=\'model.' +
-((__t = ( Formbuilder.options.mappings.ADMIN_ONLY )) == null ? '' : __t) +
-'\' />\n  Admin only\n</label -->';
-
-}
-return __p
+return ''
 };
 
 this["Formbuilder"]["templates"]["edit/common"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '<div class=\'fb-edit-section-header\'>Label</div>\n\n<div class=\'fb-common-wrapper\'>\n  <div class=\'fb-label-description\'>\n    ' +
+__p += '<div class=\'fb-edit-section-header\'>题目</div>\n\n<div class=\'fb-common-wrapper\'>\n  <div class=\'fb-label-description\'>\n    ' +
 ((__t = ( Formbuilder.templates['edit/label_description']() )) == null ? '' : __t) +
 '\n  </div>\n  <div class=\'fb-common-checkboxes\'>\n    ' +
 ((__t = ( Formbuilder.templates['edit/checkboxes']() )) == null ? '' : __t) +
@@ -920,7 +840,7 @@ __p += '<input type=\'text\' data-rv-input=\'model.' +
 ((__t = ( Formbuilder.options.mappings.LABEL )) == null ? '' : __t) +
 '\' />\n<textarea data-rv-input=\'model.' +
 ((__t = ( Formbuilder.options.mappings.DESCRIPTION )) == null ? '' : __t) +
-'\'\n  placeholder=\'Add a longer description to this field\'></textarea>';
+'\'\n  placeholder=\'备注\'></textarea>';
 
 }
 return __p
@@ -941,19 +861,7 @@ return __p
 };
 
 this["Formbuilder"]["templates"]["edit/min_max_length"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape;
-with (obj) {
-__p += '<div class=\'fb-edit-section-header\'>Length Limit</div>\n\nMin\n<input type="text" data-rv-input="model.' +
-((__t = ( Formbuilder.options.mappings.MINLENGTH )) == null ? '' : __t) +
-'" style="width: 30px" />\n\n&nbsp;&nbsp;\n\nMax\n<input type="text" data-rv-input="model.' +
-((__t = ( Formbuilder.options.mappings.MAXLENGTH )) == null ? '' : __t) +
-'" style="width: 30px" />\n\n&nbsp;&nbsp;\n\n<select data-rv-value="model.' +
-((__t = ( Formbuilder.options.mappings.LENGTH_UNITS )) == null ? '' : __t) +
-'" style="width: auto;">\n  <option value="characters">characters</option>\n  <option value="words">words</option>\n</select>\n';
-
-}
-return __p
+return ''
 };
 
 this["Formbuilder"]["templates"]["edit/options"] = function(obj) {
@@ -961,7 +869,7 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '<div class=\'fb-edit-section-header\'>Options</div>\n\n';
+__p += '<div class=\'fb-edit-section-header\'>选项</div>\n\n';
  if (typeof includeBlank !== 'undefined'){ ;
 __p += '\n  <label>\n    <input type=\'checkbox\' data-rv-checked=\'model.' +
 ((__t = ( Formbuilder.options.mappings.INCLUDE_BLANK )) == null ? '' : __t) +
@@ -969,7 +877,7 @@ __p += '\n  <label>\n    <input type=\'checkbox\' data-rv-checked=\'model.' +
  } ;
 __p += '\n\n<div class=\'option\' data-rv-each-option=\'model.' +
 ((__t = ( Formbuilder.options.mappings.OPTIONS )) == null ? '' : __t) +
-'\'>\n  <input type="checkbox" class=\'js-default-updated\' data-rv-checked="option:checked" />\n  <input type="text" data-rv-input="option:label" class=\'option-label-input\' />\n  <a class="js-add-option ' +
+'\'>\n  <input type="text" data-rv-input="option:label" class=\'option-label-input\' />\n  <a class="js-add-option ' +
 ((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
 '" title="Add Option"><i class=\'fa fa-plus-circle\'></i></a>\n  <a class="js-remove-option ' +
 ((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
@@ -981,22 +889,38 @@ __p += '\n  <label>\n    <input type=\'checkbox\' data-rv-checked=\'model.' +
  } ;
 __p += '\n\n<div class=\'fb-bottom-add\'>\n  <a class="js-add-option ' +
 ((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
-'">Add option</a>\n</div>\n';
+'">添加选项</a>\n</div>\n';
 
 }
 return __p
 };
 
-this["Formbuilder"]["templates"]["edit/size"] = function(obj) {
-obj || (obj = {});
-var __t, __p = '', __e = _.escape;
-with (obj) {
-__p += '<div class=\'fb-edit-section-header\'>Size</div>\n<select data-rv-value="model.' +
-((__t = ( Formbuilder.options.mappings.SIZE )) == null ? '' : __t) +
-'">\n  <option value="small">Small</option>\n  <option value="medium">Medium</option>\n  <option value="large">Large</option>\n</select>\n';
+this["Formbuilder"]["templates"]["edit/star"] = function(obj) {
+  obj || (obj = {});
+  var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+  function print() {
+    __p += __j.call(arguments, '')
+  }
+  with (obj) {
+    __p += '<div class=\'fb-edit-section-header\'>评级</div>\n\n';
+    __p += '\n\n<div class=\'star\'>\n  <input type="text" class=\'option-label-input\' />\n  <a class="js-add-star ' +
+((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
+'" title="Add Star"><i class=\'fa fa-plus-circle\'></i></a>\n  <a class="js-remove-option ' +
+((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
+'" title="Remove Star"><i class=\'fa fa-minus-circle\'></i></a>\n</div>\n\n';
+__p += '\n\n<div class=\'fb-bottom-add\'>\n  <a class="js-add-star ' +
+((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
+'">再加一星</a>\n</div>\n';
 
 }
 return __p
+};
+
+
+
+
+this["Formbuilder"]["templates"]["edit/size"] = function(obj) {
+return ''
 };
 
 this["Formbuilder"]["templates"]["edit/units"] = function(obj) {
@@ -1072,7 +996,7 @@ this["Formbuilder"]["templates"]["partials/left_side"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '<div class=\'fb-left\'>\n  <ul class=\'fb-tabs\'>\n    <li class=\'active\'><a data-target=\'#addField\'>Add new field</a></li>\n    <li><a data-target=\'#editField\'>Edit field</a></li>\n  </ul>\n\n  <div class=\'fb-tab-content\'>\n    ' +
+__p += '<div class=\'fb-left\'>\n  <ul class=\'fb-tabs\'>\n    <li class=\'active\'><a data-target=\'#addField\'>添加</a></li>\n    <li><a data-target=\'#editField\'>编辑</a></li>\n  </ul>\n\n  <div class=\'fb-tab-content\'>\n    ' +
 ((__t = ( Formbuilder.templates['partials/add_field']() )) == null ? '' : __t) +
 '\n    ' +
 ((__t = ( Formbuilder.templates['partials/edit_field']() )) == null ? '' : __t) +
@@ -1086,7 +1010,7 @@ this["Formbuilder"]["templates"]["partials/right_side"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '<div class=\'fb-right\'>\n  <div class=\'fb-no-response-fields\'>No response fields</div>\n  <div class=\'fb-response-fields\'></div>\n</div>\n';
+__p += '<div class=\'fb-right\'>\n  <div class=\'fb-no-response-fields\'>空</div>\n  <div class=\'fb-response-fields\'></div>\n</div>\n';
 
 }
 return __p
@@ -1109,8 +1033,8 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
 __p += '<div class=\'subtemplate-wrapper\'>\n  <div class=\'cover\'></div>\n  ' +
-((__t = ( Formbuilder.templates['view/label']({rf: rf}) )) == null ? '' : __t) +
-'\n\n  ' +
+((__t = ( Formbuilder.templates['view/label']({rf: rf}))) == null ? '' : __t) +
+'\n\n ' +
 ((__t = ( Formbuilder.fields[rf.get(Formbuilder.options.mappings.FIELD_TYPE)].view({rf: rf}) )) == null ? '' : __t) +
 '\n\n  ' +
 ((__t = ( Formbuilder.templates['view/description']({rf: rf}) )) == null ? '' : __t) +
@@ -1166,7 +1090,7 @@ with (obj) {
 __p += '<label>\n  <span>' +
 ((__t = ( Formbuilder.helpers.simple_format(rf.get(Formbuilder.options.mappings.LABEL)) )) == null ? '' : __t) +
 '\n  ';
- if (rf.get(Formbuilder.options.mappings.REQUIRED)) { ;
+ if (rf.get(Formbuilder.options.mappings.REQUIRED)) {
 __p += '\n    <abbr title=\'required\'>*</abbr>\n  ';
  } ;
 __p += '\n</label>\n';

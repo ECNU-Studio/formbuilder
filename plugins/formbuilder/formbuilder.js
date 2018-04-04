@@ -901,18 +901,18 @@ this["Formbuilder"]["templates"]["edit/star"] = function(obj) {
   function print() {
     __p += __j.call(arguments, '')
   }
-  with (obj) {
-    __p += '<div class=\'fb-edit-section-header\'>评级</div>\n\n';
-    __p += '\n\n<div class=\'star\'>\n  <input type="text" class=\'option-label-input\' />\n  <a class="js-add-star ' +
-((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
-'" title="Add Star"><i class=\'fa fa-plus-circle\'></i></a>\n  <a class="js-remove-option ' +
-((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
-'" title="Remove Star"><i class=\'fa fa-minus-circle\'></i></a>\n</div>\n\n';
-__p += '\n\n<div class=\'fb-bottom-add\'>\n  <a class="js-add-star ' +
-((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
-'">再加一星</a>\n</div>\n';
-
-}
+//with (obj) {
+//  __p += '<div class=\'fb-edit-section-header\'>评级</div>\n\n';
+//  __p += '\n\n<div class=\'star\'>\n  <input type="text" class=\'option-label-input\' />\n  <a class="js-add-star ' +
+//((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
+//'" title="Add Star"><i class=\'fa fa-plus-circle\'></i></a>\n  <a class="js-remove-option ' +
+//((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
+//'" title="Remove Star"><i class=\'fa fa-minus-circle\'></i></a>\n</div>\n\n';
+//__p += '\n\n<div class=\'fb-bottom-add\'>\n  <a class="js-add-star ' +
+//((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
+//'">再加一星</a>\n</div>\n';
+//
+//}
 return __p
 };
 

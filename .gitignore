@@ -3,3 +3,4 @@ bower_components
 .sass-cache
 compiled
 .project
+.DS_Store
